@@ -25,7 +25,7 @@ import com.aliyun.oss.model.PutObjectRequest;
  * This sample demonstrates how to get started with basic requests to Aliyun OSS 
  * using the OSS SDK for Java.
  */
-public class GetStartedSample {
+public class GetOSSObject {
 
     private static String endpoint = "<endpoint, http://oss-cn-hangzhou.aliyuncs.com>";
     private static String accessKeyId = "<accessKeyId>";
@@ -35,8 +35,15 @@ public class GetStartedSample {
 
     public static void main(String[] args) throws IOException {
 
-        endpoint =
+        endpoint = System.getenv("ENDPOINT");
+        accessKeyId = System.getenv("KEY_ID");
+        accessKeySecret = System.getenv("KEY_SECRET");
 
+
+        if args.length < 2{
+            System.out.Println("Please input the bucket name and key.")
+            return
+        }
 
         /*
          * Constructs a client instance with your account for accessing OSS
@@ -48,74 +55,15 @@ public class GetStartedSample {
         try {
 
             /*
-             * Determine whether the bucket exists
-             */
-            if (!ossClient.doesBucketExist(bucketName)) {
-                /*
-                 * Create a new OSS bucket
-                 */
-                System.out.println("Creating bucket " + bucketName + "\n");
-                ossClient.createBucket(bucketName);
-                CreateBucketRequest createBucketRequest= new CreateBucketRequest(bucketName);
-                createBucketRequest.setCannedACL(CannedAccessControlList.PublicRead);
-                ossClient.createBucket(createBucketRequest);
-            }
-
-            /*
-             * List the buckets in your account
-             */
-            System.out.println("Listing buckets");
-
-            ListBucketsRequest listBucketsRequest = new ListBucketsRequest();
-            listBucketsRequest.setMaxKeys(500);
-
-            for (Bucket bucket : ossClient.listBuckets()) {
-                System.out.println(" - " + bucket.getName());
-            }
-            System.out.println();
-
-            /*
-             * Upload an object to your bucket
-             */
-            System.out.println("Uploading a new object to OSS from a file\n");
-            ossClient.putObject(new PutObjectRequest(bucketName, key, createSampleFile()));
-
-            /*
-             * Determine whether an object residents in your bucket
-             */
-            boolean exists = ossClient.doesObjectExist(bucketName, key);
-            System.out.println("Does object " + bucketName + " exist? " + exists + "\n");
-
-            ossClient.setObjectAcl(bucketName, key, CannedAccessControlList.PublicRead);
-            ossClient.setObjectAcl(bucketName, key, CannedAccessControlList.Default);
-
-            ObjectAcl objectAcl = ossClient.getObjectAcl(bucketName, key);
-            System.out.println("ACL:" + objectAcl.getPermission().toString());
-
-            /*
              * Download an object from your bucket
              */
             System.out.println("Downloading an object");
+            long start = System.currentTimeMillis();
             OSSObject object = ossClient.getObject(bucketName, key);
+            System.out.println("Download time in ms = "+(System.currentTimeMillis()-start));
             System.out.println("Content-Type: "  + object.getObjectMetadata().getContentType());
-            displayTextInputStream(object.getObjectContent());
+            System.out.println("Size: "+object.getObjectMetadata().getSize());
 
-            /*
-             * List objects in your bucket by prefix
-             */
-            System.out.println("Listing objects");
-            ObjectListing objectListing = ossClient.listObjects(bucketName, "My");
-            for (OSSObjectSummary objectSummary : objectListing.getObjectSummaries()) {
-                System.out.println(" - " + objectSummary.getKey() + "  " +
-                        "(size = " + objectSummary.getSize() + ")");
-            }
-            System.out.println();
-
-            /*
-             * Delete an object
-             */
-            System.out.println("Deleting an object\n");
-            ossClient.deleteObject(bucketName, key);
 
         } catch (OSSException oe) {
             System.out.println("Caught an OSSException, which means your request made it to OSS, "
