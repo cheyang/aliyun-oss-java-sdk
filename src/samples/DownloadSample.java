@@ -57,8 +57,10 @@ public class DownloadSample {
             downloadFileRequest.setPartSize(1024 * 1024 * 1);
             // Enable checkpoint. By default it's false.
             downloadFileRequest.setEnableCheckpoint(true);
-            
+
+            long start = System.currentTimeMillis();
             DownloadFileResult downloadResult = ossClient.downloadFile(downloadFileRequest);
+            System.out.println("Sleep time in ms = "+(System.currentTimeMillis()-start));
             
             ObjectMetadata objectMetadata = downloadResult.getObjectMetadata();
             System.out.println(objectMetadata.getETag());
