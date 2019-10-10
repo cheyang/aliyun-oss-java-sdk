@@ -37,7 +37,7 @@ import com.aliyun.oss.model.GetObjectRequest;
  * This sample demonstrates how to get started with basic requests to Aliyun OSS
  * using the OSS SDK for Java.
  */
-public class GetOSSObject {
+public class GetOSSObjectFile {
 
     private static String endpoint = "<endpoint, http://oss-cn-hangzhou.aliyuncs.com>";
     private static String accessKeyId = "<accessKeyId>";
@@ -85,14 +85,13 @@ public class GetOSSObject {
             // OSSObject object = ossClient.getObject(bucketName, key);
             GetObjectRequest request = new GetObjectRequest(bucketName, key);
 
-            long startPos = 1, endPos = -1;
+            long startPos = 1, endPos = 3;
             request.setRange(startPos, endPos);
 
             File file = new File(key);
 //            file.getParentFile().mkdirs();
 
-            OSSObject object = ossClient.getObject(request);
-            meta = object.getObjectMetadata();
+            meta = ossClient.getObject(request, file);
             System.out.println("Download time in ms = "+(System.currentTimeMillis()-start));
             // System.out.println("Content-Type: "  + object.getObjectMetadata().getContentType());
             // System.out.println("Size: "+ object.getObjectMetadata().getContentLength());
