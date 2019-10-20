@@ -1,11 +1,3 @@
-/*
- * @Author: cheyang
- * @Date:   2019-10-03 23:35:48
- * @Last Modified by:   cheyang
- * @Last Modified time: 2019-10-04 12:27:32
- */
-
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,10 +7,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
-import com.aliyun.oss.ClientException;
-import com.aliyun.oss.OSS;
-import com.aliyun.oss.OSSClientBuilder;
-import com.aliyun.oss.OSSException;
+import com.aliyun.oss.*;
 import com.aliyun.oss.model.Bucket;
 import com.aliyun.oss.model.CannedAccessControlList;
 import com.aliyun.oss.model.CreateBucketRequest;
@@ -37,15 +26,15 @@ import static com.aliyun.oss.internal.OSSConstants.DEFAULT_BUFFER_SIZE;
  * This sample demonstrates how to get started with basic requests to Aliyun OSS
  * using the OSS SDK for Java.
  */
-public class GetOSSObject {
+public class GetOSSObject1 {
 
     private static String endpoint = "<endpoint, http://oss-cn-hangzhou.aliyuncs.com>";
     private static String accessKeyId = "<accessKeyId>";
     private static String accessKeySecret = "<accessKeySecret>";
-    private static String bucketName = "test-huabei5";
+    private static String bucketName = "train-00001-of-01024";
     private static String key = "test.txt";
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
 
         endpoint = System.getenv("ENDPOINT");
         accessKeyId = System.getenv("KEY_ID");
@@ -55,6 +44,8 @@ public class GetOSSObject {
 //        key=args[1];
 
         boolean metadata = true;
+        ClientBuilderConfiguration config = new ClientBuilderConfiguration();
+        config.setSocketTimeout(30000);
 
         ObjectMetadata meta = null;
 
@@ -68,7 +59,7 @@ public class GetOSSObject {
         /*
          * Constructs a client instance with your account for accessing OSS
          */
-        OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
+        OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret, config);
 
         System.out.println("Getting Started with OSS SDK for Java\n");
 
@@ -85,46 +76,25 @@ public class GetOSSObject {
             // OSSObject object = ossClient.getObject(bucketName, key);
             GetObjectRequest request = new GetObjectRequest(bucketName, key);
 
-            long startPos = 0, endPos = -1;
-            int toRead = 2;
-//            request.setRange(startPos, endPos);
+            long startPos = 0, endPos = 33554431;
+            int toRead = 1048576;
+            request.setRange(startPos, endPos);
 
             File file = new File(key);
 //            file.getParentFile().mkdirs();
 
             OSSObject object = ossClient.getObject(request);
             InputStream input = object.getObjectContent();
-            meta = object.getObjectMetadata();
+//            meta = object.getObjectMetadata();
             System.out.println("Download time in ms = "+(System.currentTimeMillis()-start));
             // System.out.println("Content-Type: "  + object.getObjectMetadata().getContentType());
             // System.out.println("Size: "+ object.getObjectMetadata().getContentLength());
-            byte[] buffer = new byte[DEFAULT_BUFFER_SIZE*1024];
 
-            int read = input.read(buffer, 0, 5);
+            for (int i=0;i<31;i++){
+                displayTextInputStream(input, toRead);
+                Thread.sleep(2000);
+            }
 
-            System.out.println(new String(buffer, 0, 5));
-
-            System.out.println("read len:" + read);
-
-            input.reset();
-
-            byte[] buffer1 = new byte[DEFAULT_BUFFER_SIZE*1024];
-
-            read = input.read(buffer1, 0, 2);
-
-            System.out.println(new String(buffer1, 0, 2));
-
-            System.out.println("read len:" + read);
-
-            input.reset();
-
-            byte[] buffer2 = new byte[DEFAULT_BUFFER_SIZE*1024];
-
-            read = input.read(buffer2, 0, 7);
-
-            System.out.println(new String(buffer2, 0, 7));
-
-            System.out.println("read len:" + read);
 
 
 //            displayTextInputStream(input, 5);
@@ -161,7 +131,7 @@ public class GetOSSObject {
 
         int read = input.read(buffer, 0, length);
 
-        System.out.println(new String(buffer, 0, length));
+//        System.out.println(new String(buffer, 0, length));
 
         System.out.println("read len:" + read);
     }
